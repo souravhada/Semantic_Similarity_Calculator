@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, redirect
 from sklearn.metrics.pairwise import cosine_similarity
-import tensorflow as tf
 import tensorflow_hub as hub
 import re
 from bs4 import BeautifulSoup
