@@ -4,9 +4,8 @@ import tensorflow_hub as hub
 import re
 from bs4 import BeautifulSoup
 
-# Step 1: Input the paragraphs
-text1 = ""
-text2 = ""
+MODEL_URL = "https://tfhub.dev/google/universal-sentence-encoder/4"
+app = Flask(__name__)
 
 # Step 2: Clean the text
 def clean_text(text):
@@ -20,8 +19,10 @@ def clean_text(text):
     return text
 
 # Step 3: Load the USE model
-use_model_url = "https://tfhub.dev/google/universal-sentence-encoder/4"
-use_model = hub.load(use_model_url)
+def load_model():
+    use_model_url = MODEL_URL
+    use_model = hub.load(use_model_url)
+    return use_model
 
 # Step 4: Calculate cosine similarity
 def calculate_similarity(text1, text2):
@@ -29,6 +30,7 @@ def calculate_similarity(text1, text2):
     cleantext1 = clean_text(text1)
     cleantext2 = clean_text(text2)
 
+    use_model = load_model()
     # Encode the paragraphs
     embeddings_text1 = use_model([cleantext1])
     embeddings_text2 = use_model([cleantext2])
@@ -38,20 +40,12 @@ def calculate_similarity(text1, text2):
 
     return similarity_scores[0][0]
 
-# Set up the Flask app
-app = Flask(__name__)
-
-# Initialize the paragraphs with empty strings
-text1 = ""
-text2 = ""
-
 # Define the route for the home page where the user can input the paragraphs
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    global text1, text2  # Add these lines to access the global variables
-
     similarity_score = None
-
+    text1 = ""
+    text2 = ""
     if request.method == 'POST':
         text1 = request.form['text1']
         text2 = request.form['text2']
@@ -62,7 +56,6 @@ def home():
 # Define the route for calculating the similarity
 @app.route('/calculate_similarity', methods=['POST'])
 def calculate_similarity_route():
-    global text1, text2  # Add these lines to access the global variables
 
     text1 = request.form['text1']
     text2 = request.form['text2']
@@ -72,14 +65,11 @@ def calculate_similarity_route():
 # Define the route for resetting the paragraphs
 @app.route('/reset', methods=['GET'])
 def reset():
-    global text1, text2  # Add these lines to access the global variables
-
-    text1 = ""
-    text2 = ""
     return redirect('/')  # Redirect to the home page
 
 # Run the Flask app
 if __name__ == '__main__':
+    # Set up the Flask app
     app.run(debug=True)
 
 
